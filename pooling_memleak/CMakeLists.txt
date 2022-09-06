@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.17)
+project(
+  trt_memleak
+  LANGUAGES C CXX)
+
+find_package(CUDA)
+message(STATUS "CUDAToolkit_VERSION ${CUDAToolkit_VERSION}")
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+option(BUILD_WITH_ASAN "BUILD_WITH_ASAN" OFF)
+message(STATUS "CUDA_LIBRARIES ${CUDA_LIBRARIES} CUDA_CUBLAS_LIBRARIES ${CUDA_CUBLAS_LIBRARIES}")
+if(BUILD_WITH_ASAN)
+    set(CMAKE_C_FLAGS "-O0 -g -fsanitize=address -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS "-O0 -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
+add_executable(test main.cpp)
+target_include_directories(test PUBLIC "${CUDA_TOOLKIT_ROOT_DIR}/include/")
+target_include_directories(test PUBLIC "${TRT_ROOT_DIR}/include/")
+target_include_directories(test PUBLIC "${CUDNN_ROOT_DIR}/include/")
+target_link_directories(test PUBLIC "${CUDA_TOOLKIT_ROOT_DIR}/lib64/")
+target_link_directories(test PUBLIC "${TRT_ROOT_DIR}/lib/")
+target_link_directories(test PUBLIC "${CUDNN_ROOT_DIR}/lib64/")
+target_link_libraries(test nvinfer nvonnxparser cudnn nvrtc cublasLt cudart)
